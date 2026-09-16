@@ -1,3 +1,5 @@
+import random
+
 '''
 Initialize a basic minesweeper template
 '''
@@ -13,6 +15,29 @@ class Cell:
 # Return a array of cells 
 def create_grid(size):
     return [[Cell() for _ in range(size)] for _ in range(size)]
+
+# Mine configuration functions
+def get_mine_count(min_mines=10, max_mines=20):
+    """Prompt the user for the desired mine count (10-20) with input validation."""
+    while True:
+        try:
+            mines = int(input(f"Enter the desired number of mines ({min_mines}-{max_mines}): "))
+            if min_mines <= mines <= max_mines:
+                return mines
+            print(f"Invalid choice. Please enter a number between {min_mines} and {max_mines}.")
+        except ValueError:
+            print("Invalid input. Please enter an integer.")
+
+def place_mines(grid, mine_count):
+    """Randomly place the mines on the grid."""
+    size = len(grid)
+    all_positions = [(r, c) for r in range(size) for c in range(size)]
+    
+    # Pick unique random coordinates
+    mine_positions = random.sample(all_positions, mine_count)
+    
+    for r, c in mine_positions:
+        grid[r][c].is_mine = True
 
 # Return how many cells are flagged
 def count_flags(grid):
@@ -66,11 +91,14 @@ def check_game_status(grid):
 if __name__ == "__main__":
     grid = create_grid(10)
 
-    total_mines = 10 # Temp mines value
+    # Prompt user for mine count and place them
+    total_mines = get_mine_count(10, 20)
+    place_mines(grid, total_mines)
 
-    # For testing random mines locations and adjacent mines counter,
-    #  assign each cell to be uncovered. This so you can see these printed
-    #  on the grid.
+    # For testing: uncover all cells so you can see where the mines are
+    for row in grid:
+        for cell in row:
+            cell.is_uncovered = True
 
     print(f"Mines remaining: {remaining_mines(grid, total_mines)}")
     print(f"Status: {check_game_status(grid)}")
