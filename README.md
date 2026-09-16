@@ -11,13 +11,10 @@ Minesweeper/
 ├── README.md
 |
 └── src/
-    |── main.py # The main program the user is intended to run
     |
-    |── ... (Copy and paste for each Python file)
-    |
-    └── tkGrid.py # Grid file that displays the GUI
+    └── main.py # The main program the user is intended to run
 ```
-`main.py` imports from every Python file located in `src/`
+
 ## How to Run
 
 ```
