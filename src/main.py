@@ -118,6 +118,23 @@ def check_game_status(grid):
  
     return "Victory"
 
+def uncover_cell(grid, row, col):
+    """Uncover a selected cell.
+
+    Args:
+        grid (2D list): 2D representation of the grid
+        row (int): Row index of the selected cell
+        col (int): Column index of the selected cell
+
+    Returns:
+        None
+    """
+    cell = grid[row][col]
+
+    # Uncover the selected cell.
+    cell.is_uncovered = True
+
+
 # ========================= USER INTERFACE =========================
 
 def print_grid(grid):
@@ -160,11 +177,29 @@ if __name__ == "__main__":
     place_mines(grid, total_mines)
     count_adjacent_mines(grid)
 
-    # For testing: uncover all cells so you can see where the mines are
-    for row in grid:
-        for cell in row:
-            cell.is_uncovered = True
+    # Main game loop
+    while check_game_status(grid) == "Playing":
+        print_grid(grid)
+        print(f"Mines remaining: {remaining_mines(grid, total_mines)}")
+        print(f"Status: {check_game_status(grid)}")
 
+        # Temporary input for testing the uncover function.
+        # This will be replaced by the input handler in Task 8.
+        try:
+            row = int(input("Enter row (1-10): ")) - 1
+            col = int(input("Enter column (1-10): ")) - 1
+
+            # Make sure the selected cell is inside the grid.
+            if 0 <= row < len(grid) and 0 <= col < len(grid):
+                uncover_cell(grid, row, col)
+            else:
+                print("Invalid cell. Please enter a row and column from 1 to 10.")
+
+        except ValueError:
+            print("Invalid input. Please enter numbers for the row and column.")
+
+    # Display the final game state.
+    print_grid(grid)
     print(f"Mines remaining: {remaining_mines(grid, total_mines)}")
     print(f"Status: {check_game_status(grid)}")
-    print_grid(grid)
+
