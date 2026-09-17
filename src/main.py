@@ -4,21 +4,34 @@ import random
 Initialize a basic minesweeper template
 '''
 
-# Cell class of grid cell states and adjacent mine counter
+# ========================= BOARD MANAGER ==========================
+
 class Cell:
+    """Class for grid cell's states and adjacent mine counter
+    """
     def __init__(self):
         self.is_mine = False
         self.is_uncovered = False
         self.is_flagged = False
         self.adjacent_mines = 0 # ranges from 0 to 8
 
-# Return a array of cells 
 def create_grid(size):
+    """Create the 2D list representation of the grid
+    Args:
+        size (int): The row and column length of the minesweeper grid.
+    Returns:
+        A 2D list containing only Cell objects.
+    """
     return [[Cell() for _ in range(size)] for _ in range(size)]
+
+# ========================= GAME LOGIC =========================
 
 # Mine configuration functions
 def get_mine_count(min_mines=10, max_mines=20):
-    """Prompt the user for the desired mine count (10-20) with input validation."""
+    """Prompt the user for the desired mine count (10-20) with input validation.
+    Returns:
+        int: The number of mines the user has chosen.
+    """
     while True:
         try:
             mines = int(input(f"Enter the desired number of mines ({min_mines}-{max_mines}): "))
@@ -29,7 +42,8 @@ def get_mine_count(min_mines=10, max_mines=20):
             print("Invalid input. Please enter an integer.")
 
 def place_mines(grid, mine_count):
-    """Randomly place the mines on the grid."""
+    """Randomly place the mines on the grid.
+    """
     size = len(grid)
     all_positions = [(r, c) for r in range(size) for c in range(size)]
     
@@ -39,8 +53,11 @@ def place_mines(grid, mine_count):
     for r, c in mine_positions:
         grid[r][c].is_mine = True
         
-# Update the adjacent mine count for each cell
 def count_adjacent_mines(grid):
+    """Update the adjacent mine count for each cell
+    Args:
+        grid (2D list): 2D representation of the grid
+    """
     size = len(grid)
 
     for row in range(size):
@@ -60,16 +77,54 @@ def count_adjacent_mines(grid):
                             if new_row != row or new_col != col:
                                 grid[new_row][new_col].adjacent_mines += 1
 
-# Return how many cells are flagged
 def count_flags(grid):
+    """Sum the amount of flags on the grid
+    Args:
+        grid (2D list): 2D representation of the grid
+    Returns:
+        int : The total number of flags placed on the grid
+    """
     return sum(cell.is_flagged for row in grid for cell in row)
  
-# Return the remaining amount of mines left
 def remaining_mines(grid, total_mines):
+    """Calculate the number of remaining mines to flag (assuming that all flags 
+    have been placed correctly)
+    Args:
+        grid (2D): 2D representation of the grid
+        total_mines (int): The total number of mines
+    Returns:
+        int: The remaining amount of mines left
+    """
     return total_mines - count_flags(grid)
 
-# Print the current state of the grid and the cells' current state.
+def check_game_status(grid):
+    """Determine whether the player has won, lost, or playing
+    Args:
+        grid (2D): 2D representation of the grid
+    Returns:
+        str: Return game status of the player
+    """
+    # Player has uncovered a mine
+    for row in grid:
+        for cell in row:
+            if cell.is_uncovered and cell.is_mine:
+                return "Game Over: Loss"
+
+    # Player has yet to uncover all cells without mines
+    for row in grid:
+        for cell in row:
+            if not cell.is_mine and not cell.is_uncovered:
+                return "Playing"
+ 
+    return "Victory"
+
+# ========================= USER INTERFACE =========================
+
 def print_grid(grid):
+    """Print the current state of the grid and the cells' current state.
+    Args:
+        grid (2D): 2D representation of the grid
+    """
     size = len(grid)
 
     # print column letters
@@ -93,21 +148,9 @@ def print_grid(grid):
                 print('.', end=' ')
         print()
 
-# Return game status of the player
-def check_game_status(grid):
-    # Player has uncovered a mine
-    for row in grid:
-        for cell in row:
-            if cell.is_uncovered and cell.is_mine:
-                return "Game Over: Loss"
+# ================= INPUT HANDLER =================
 
-    # Player has yet to uncover all cells without mines
-    for row in grid:
-        for cell in row:
-            if not cell.is_mine and not cell.is_uncovered:
-                return "Playing"
- 
-    return "Victory"
+# Not implemented yet
 
 if __name__ == "__main__":
     grid = create_grid(10)
