@@ -38,6 +38,27 @@ def place_mines(grid, mine_count):
     
     for r, c in mine_positions:
         grid[r][c].is_mine = True
+        
+# Update the adjacent mine count for each cell
+def count_adjacent_mines(grid):
+    size = len(grid)
+
+    for row in range(size):
+        for col in range(size):
+            if grid[row][col].is_mine:
+
+                # Check the 8 cells around the mine
+                for row_change in [-1, 0, 1]:
+                    for col_change in [-1, 0, 1]:
+                        new_row = row + row_change
+                        new_col = col + col_change
+
+                        # Make sure the cell is inside the grid
+                        if 0 <= new_row < size and 0 <= new_col < size:
+
+                            # Do not count the mine itself
+                            if new_row != row or new_col != col:
+                                grid[new_row][new_col].adjacent_mines += 1
 
 # Return how many cells are flagged
 def count_flags(grid):
@@ -94,6 +115,7 @@ if __name__ == "__main__":
     # Prompt user for mine count and place them
     total_mines = get_mine_count(10, 20)
     place_mines(grid, total_mines)
+    count_adjacent_mines(grid)
 
     # For testing: uncover all cells so you can see where the mines are
     for row in grid:
