@@ -175,7 +175,6 @@ if __name__ == "__main__":
     # Prompt user for mine count and place them
     total_mines = get_mine_count(10, 20)
     place_mines(grid, total_mines)
-    print([(r + 1, c + 1) for r, row in enumerate(grid) for c, cell in enumerate(row) if cell.is_mine])
     count_adjacent_mines(grid)
 
     # Main game loop
