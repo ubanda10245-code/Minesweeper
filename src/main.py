@@ -15,6 +15,7 @@ class Cell:
         self.is_flagged = False
         self.adjacent_mines = 0 # ranges from 0 to 8
 
+
 def create_grid(size):
     """Create the 2D list representation of the grid
     Args:
@@ -48,10 +49,36 @@ def place_mines(grid, mine_count):
     all_positions = [(r, c) for r in range(size) for c in range(size)]
     
     # Pick unique random coordinates
-    mine_positions = random.sample(all_positions, mine_count)
-    
+    mine_positions = random.sample(all_positions, mine_count)    
+
     for r, c in mine_positions:
-        grid[r][c].is_mine = True
+            grid[r][c].is_mine = True
+
+
+def make_first_move_safe(grid, row, col):
+    """Move a mine away from the first cell selected by the player."""
+    selected_cell = grid[row][col]
+    #TODO read this
+    if not selected_cell.is_mine:
+        return
+
+    safe_positions = [
+        (current_row, current_col)
+        for current_row in range(len(grid))
+        for current_col in range(len(grid))
+        if not grid[current_row][current_col].is_mine
+        and (current_row, current_col) != (row, col)
+    ]
+
+    new_row, new_col = random.choice(safe_positions)
+    selected_cell.is_mine = False
+    grid[new_row][new_col].is_mine = True
+
+    # Recalculate counts because the mine positions changed.
+    for current_row in grid:
+        for cell in current_row:
+            cell.adjacent_mines = 0
+    count_adjacent_mines(grid)
         
 def count_adjacent_mines(grid):
     """Update the adjacent mine count for each cell
@@ -131,13 +158,44 @@ def uncover_cell(grid, row, col):
     """
     cell = grid[row][col]
 
-    # Do not uncover a flagged cell.
+    #don't uncover a flagged cell.
     if cell.is_flagged:
         print("Cannot uncover a flagged cell.")
         return
 
-    # Uncover the selected cell.
-    cell.is_uncovered = True
+    cells_to_visit = [(row, col)]
+    visited = set()
+
+    while cells_to_visit:
+        current_row, current_col = cells_to_visit.pop()
+
+        if (current_row, current_col) in visited: #Checks that the current tile has not already been evaluated 
+            continue
+
+        visited.add((current_row, current_col))
+
+        current_cell = grid[current_row][current_col]
+
+        if current_cell.is_flagged or current_cell.is_mine: #No need to check off of mines
+            continue
+
+        current_cell.is_uncovered = True
+
+        if current_cell.adjacent_mines != 0: #Don't need to continue expansion on cells with neighboring mines
+            continue
+
+        for row_change in [-1, 0, 1]:
+            for col_change in [-1, 0, 1]:
+                if row_change == 0 and col_change == 0: #Skips comparison with itsself 
+                    continue
+
+                new_row = current_row + row_change
+                new_col = current_col + col_change
+
+                if 0 <= new_row < len(grid) and 0 <= new_col < len(grid): #Validates tile
+                    neighbor = grid[new_row][new_col]
+                    if not neighbor.is_flagged and not neighbor.is_mine: #Adds non mines to potential auto-uncover canidates
+                        cells_to_visit.append((new_row, new_col))
 
 
 def flag_cell(grid, row, col):
@@ -197,9 +255,11 @@ def print_grid(grid):
 
 if __name__ == "__main__":
     grid = create_grid(10)
+    first_move = True
 
     # Prompt user for mine count and place them
     total_mines = get_mine_count(10, 20)
+    
     place_mines(grid, total_mines)
     count_adjacent_mines(grid)
 
@@ -217,6 +277,9 @@ if __name__ == "__main__":
 
             # Make sure the selected cell is inside the grid.
             if 0 <= row < len(grid) and 0 <= col < len(grid):
+                if first_move:
+                    make_first_move_safe(grid, row, col)
+                    first_move = False
                 uncover_cell(grid, row, col)
             else:
                 print("Invalid cell. Please enter a row and column from 1 to 10.")
