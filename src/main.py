@@ -131,9 +131,35 @@ def uncover_cell(grid, row, col):
     """
     cell = grid[row][col]
 
+    # Do not uncover a flagged cell.
+    if cell.is_flagged:
+        print("Cannot uncover a flagged cell.")
+        return
+
     # Uncover the selected cell.
     cell.is_uncovered = True
 
+
+def flag_cell(grid, row, col):
+    """Toggle the flag on a selected cell.
+
+    Args:
+        grid (2D list): 2D representation of the grid
+        row (int): Row index of the selected cell
+        col (int): Column index of the selected cell
+
+    Returns:
+        None
+    """
+    cell = grid[row][col]
+
+    # Do not allow an uncovered cell to be flagged.
+    if cell.is_uncovered:
+        print("Cannot flag a cell that has already been uncovered.")
+        return
+
+    # Toggle the flag.
+    cell.is_flagged = not cell.is_flagged
 
 # ========================= USER INTERFACE =========================
 
