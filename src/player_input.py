@@ -1,3 +1,7 @@
+'''
+Description: This file contains functions to handle player input and display mine locations after a loss.
+'''
+
 def get_player_input(grid, uncover_action, flag_action):
     """
     Get input from the player and execute the corresponding action.
@@ -6,11 +10,12 @@ def get_player_input(grid, uncover_action, flag_action):
         uncover_action (function): Function to uncover a cell
         flag_action (function): Function to flag a cell
     """
-
     """Command format:
         A4
         A4, Flag
         Flag, A4 """
+    
+    print("\nEnter a command in the format 'A4' to uncover a cell or 'A4, Flag' to flag a cell.")
     command = input("Enter command: ").strip()
 
     # separate the cell and action using the comma
@@ -56,15 +61,12 @@ def get_player_input(grid, uncover_action, flag_action):
     else:
         print("Invalid command.")
 
-
 def show_mines(grid): # show location of mines after loss
     """Show the locations of all mines on the grid.
     Args:
         grid (2D list): 2D representation of the grid
     """
-    
     print("\nMine locations:")
-
     size = len(grid)
 
     col_labels = [chr(ord('A') + i) for i in range(size)]
