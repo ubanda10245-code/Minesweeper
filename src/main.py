@@ -30,6 +30,9 @@ def create_grid(size):
 # Mine configuration functions
 def get_mine_count(min_mines=10, max_mines=20):
     """Prompt the user for the desired mine count (10-20) with input validation.
+    Args:
+        min_mines (int): The minimum amount of mines allowed
+        max_mines (int): The maximum amount of mines allowed
     Returns:
         int: The number of mines the user has chosen.
     """
@@ -44,6 +47,9 @@ def get_mine_count(min_mines=10, max_mines=20):
 
 def place_mines(grid, mine_count):
     """Randomly place the mines on the grid.
+    Args:
+        grid (2D list): 2D representation of the grid
+        mine_count (int): The desired amount of mines to be placed
     """
     size = len(grid)
     all_positions = [(r, c) for r in range(size) for c in range(size)]
@@ -56,12 +62,20 @@ def place_mines(grid, mine_count):
 
 
 def make_first_move_safe(grid, row, col):
-    """Move a mine away from the first cell selected by the player."""
+    """Move a mine away from the first cell selected by the player.
+    Args:
+        grid (2D list): 2D representation of the grid
+        row (int): Row index of the selected cell
+        col (int): Column index of the selected cell
+    Return:
+        (none) This exits the function if the selected mine is not a mine.
+    """
     selected_cell = grid[row][col]
-    #TODO read this
+
     if not selected_cell.is_mine:
         return
 
+    # Store locations on the grid that do not contain a mine
     safe_positions = [
         (current_row, current_col)
         for current_row in range(len(grid))
@@ -70,6 +84,7 @@ def make_first_move_safe(grid, row, col):
         and (current_row, current_col) != (row, col)
     ]
 
+    # Move the mine to any safe_positions and make the selected cell safe
     new_row, new_col = random.choice(safe_positions)
     selected_cell.is_mine = False
     grid[new_row][new_col].is_mine = True
@@ -147,12 +162,10 @@ def check_game_status(grid):
 
 def uncover_cell(grid, row, col):
     """Uncover a selected cell.
-
     Args:
         grid (2D list): 2D representation of the grid
         row (int): Row index of the selected cell
         col (int): Column index of the selected cell
-
     Returns:
         None
     """
@@ -173,20 +186,21 @@ def uncover_cell(grid, row, col):
             continue
 
         visited.add((current_row, current_col))
-
         current_cell = grid[current_row][current_col]
 
-        if current_cell.is_flagged or current_cell.is_mine: #No need to check off of mines
+        if current_cell.is_flagged:
             continue
-
         current_cell.is_uncovered = True
+
+        if current_cell.is_mine:
+            continue
 
         if current_cell.adjacent_mines != 0: #Don't need to continue expansion on cells with neighboring mines
             continue
 
         for row_change in [-1, 0, 1]:
             for col_change in [-1, 0, 1]:
-                if row_change == 0 and col_change == 0: #Skips comparison with itsself 
+                if row_change == 0 and col_change == 0: #Skips comparison with itself 
                     continue
 
                 new_row = current_row + row_change
@@ -194,18 +208,41 @@ def uncover_cell(grid, row, col):
 
                 if 0 <= new_row < len(grid) and 0 <= new_col < len(grid): #Validates tile
                     neighbor = grid[new_row][new_col]
-                    if not neighbor.is_flagged and not neighbor.is_mine: #Adds non mines to potential auto-uncover canidates
+                    if not neighbor.is_flagged and not neighbor.is_mine: #Adds non mines to potential auto-uncover candidates
                         cells_to_visit.append((new_row, new_col))
+
+
+def create_first_move_handler():
+    """Return an uncover action that protects only the first uncover.
+    Returns:
+        function: A function that uncovers a cell and makes the first move safe.
+    """
+    first_uncover = True
+
+    def uncover_with_first_move_safe(grid, row, col):
+        """ Uncover a cell and make the first move safe if it's the first uncover.
+        Args:
+            grid (2D list): 2D representation of the grid
+            row (int): Row index of the selected cell
+            col (int): Column index of the selected cell
+        """
+        nonlocal first_uncover
+
+        if first_uncover:
+            make_first_move_safe(grid, row, col)
+            first_uncover = False
+
+        uncover_cell(grid, row, col)
+
+    return uncover_with_first_move_safe
 
 
 def flag_cell(grid, row, col):
     """Toggle the flag on a selected cell.
-
     Args:
         grid (2D list): 2D representation of the grid
         row (int): Row index of the selected cell
         col (int): Column index of the selected cell
-
     Returns:
         None
     """
@@ -251,11 +288,13 @@ def print_grid(grid):
 
 # ================= INPUT HANDLER =================
 
-# Not implemented yet
+from player_input import get_player_input, show_mines
+
+# ================= MAIN GAME LOOP =================
 
 if __name__ == "__main__":
     grid = create_grid(10)
-    first_move = True
+    uncover_action = create_first_move_handler()
 
     # Prompt user for mine count and place them
     total_mines = get_mine_count(10, 20)
@@ -269,26 +308,17 @@ if __name__ == "__main__":
         print(f"Mines remaining: {remaining_mines(grid, total_mines)}")
         print(f"Status: {check_game_status(grid)}")
 
-        # Temporary input for testing the uncover function.
-        # This will be replaced by the input handler in Task 8.
-        try:
-            row = int(input("Enter row (1-10): ")) - 1
-            col = int(input("Enter column (1-10): ")) - 1
+        get_player_input(grid, uncover_action, flag_cell)
 
-            # Make sure the selected cell is inside the grid.
-            if 0 <= row < len(grid) and 0 <= col < len(grid):
-                if first_move:
-                    make_first_move_safe(grid, row, col)
-                    first_move = False
-                uncover_cell(grid, row, col)
-            else:
-                print("Invalid cell. Please enter a row and column from 1 to 10.")
+    final_status = check_game_status(grid)
 
-        except ValueError:
-            print("Invalid input. Please enter numbers for the row and column.")
+    if final_status == "Victory":
+        print("Congratulations! You've won the game!")
 
     # Display the final game state.
     print_grid(grid)
     print(f"Mines remaining: {remaining_mines(grid, total_mines)}")
-    print(f"Status: {check_game_status(grid)}")
+    print(f"Status: {final_status}")
 
+    if final_status == "Game Over: Loss":
+        show_mines(grid)

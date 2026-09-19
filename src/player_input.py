@@ -1,6 +1,12 @@
-from main import uncover_cell, flag_cell
+def get_player_input(grid, uncover_action, flag_action):
+    """
+    Get input from the player and execute the corresponding action.
+    Args:
+        grid (2D list): 2D representation of the grid
+        uncover_action (function): Function to uncover a cell
+        flag_action (function): Function to flag a cell
+    """
 
-def get_player_input(grid):
     """Command format:
         A4
         A4, Flag
@@ -13,11 +19,16 @@ def get_player_input(grid):
     if len(parts) == 1:
         cell_name = parts[0].upper() # convert to uppercase
 
-        col = ord(cell_name[0]) - ord('A') # convert letter to column index
-        row = int(cell_name[1:]) - 1 # convert number to row index
+        try:
+            col = ord(cell_name[0]) - ord('A') # convert letter to column index
+            row = int(cell_name[1:]) - 1 # convert number to row index
+
+        except (IndexError, ValueError):
+            print("Invalid command")
+            return
 
         if 0 <= row < len(grid) and 0 <= col < len(grid):
-            uncover_cell(grid, row, col)
+            uncover_action(grid, row, col)
         else:
             print("Invalid cell.")
 
@@ -31,19 +42,27 @@ def get_player_input(grid):
             print("Invalid command.")
             return
 
-        col = ord(cell_name[0]) - ord('A')
-        row = int(cell_name[1:]) - 1
+        try:
+            col = ord(cell_name[0]) - ord('A')
+            row = int(cell_name[1:]) - 1
+        except (IndexError, ValueError):
+            print("Invalid command")
+            return
 
         if 0 <= row < len(grid) and 0 <= col < len(grid):
-            flag_cell(grid, row, col)
+            flag_action(grid, row, col)
         else:
             print("Invalid cell.")
-
     else:
         print("Invalid command.")
 
 
 def show_mines(grid): # show location of mines after loss
+    """Show the locations of all mines on the grid.
+    Args:
+        grid (2D list): 2D representation of the grid
+    """
+    
     print("\nMine locations:")
 
     size = len(grid)
