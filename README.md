@@ -33,6 +33,9 @@ Minesweeper/
 │   ├── 01 - System Architecture
 │   └── 02 - Meeting logs
 └── src/
+    ├── board.py
+    ├── display.py
+    ├── game_logic.py
     ├── main.py
     └── player_input.py
 ```
