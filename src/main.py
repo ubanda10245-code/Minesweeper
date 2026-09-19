@@ -1,8 +1,6 @@
 '''
 Description: This is the main file for the Minesweeper game. 
-It contains the main game loop, as well as the functions for creating the grid, placing mines, 
-counting adjacent mines, uncovering cells, and checking the game status.
-It imports the get_player_input and show_mines functions from the player_input.py file.
+It contains the main game loop.
 '''
 
 import random

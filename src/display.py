@@ -1,3 +1,7 @@
+'''
+Description: This file contains functions to display the 
+current state of the grid and the cells' current state.
+'''
 
 def print_grid(grid):
     """Print the current state of the grid and the cells' current state.

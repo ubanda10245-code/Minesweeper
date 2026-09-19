@@ -1,3 +1,9 @@
+'''
+Description: This file contains the game logic for Minesweeper, 
+including functions for mine configuration, uncovering cells, 
+flagging cells, and checking the game status.
+'''
+
 import random
 
 # Mine configuration functions
@@ -35,32 +41,51 @@ def place_mines(grid, mine_count):
 
 
 def make_first_move_safe(grid, row, col):
-    """Move a mine away from the first cell selected by the player.
+    """Move nearby mines away from the first cell selected by the player.
     Args:
         grid (2D list): 2D representation of the grid
         row (int): Row index of the selected cell
         col (int): Column index of the selected cell
     Return:
-        (none) This exits the function if the selected mine is not a mine.
+        (none) This exits the function if the selected cell is already safe.
     """
     selected_cell = grid[row][col]
 
-    if not selected_cell.is_mine:
+    if not selected_cell.is_mine and selected_cell.adjacent_mines == 0:
         return
 
-    # Store locations on the grid that do not contain a mine
+    # Find all mine positions and not adjacent to the selected cell
+    mine_positions = [
+        (current_row, current_col)
+        for current_row in range(len(grid))
+        for current_col in range(len(grid))
+        if grid[current_row][current_col].is_mine
+        and abs(current_row - row) <= 1
+        and abs(current_col - col) <= 1
+    ]
+
+    # Find all safe positions that are not adjacent to the selected cell
     safe_positions = [
         (current_row, current_col)
         for current_row in range(len(grid))
         for current_col in range(len(grid))
         if not grid[current_row][current_col].is_mine
-        and (current_row, current_col) != (row, col)
+        and not (
+            abs(current_row - row) <= 1
+            and abs(current_col - col) <= 1
+        )
     ]
 
-    # Move the mine to any safe_positions and make the selected cell safe
-    new_row, new_col = random.choice(safe_positions)
-    selected_cell.is_mine = False
-    grid[new_row][new_col].is_mine = True
+    # If there are not enough safe positions to move the mines, exit the function
+    if len(safe_positions) < len(mine_positions):
+        return
+
+    # Move the mines to safe positions
+    for current_row, current_col in mine_positions:
+        new_row, new_col = random.choice(safe_positions)
+        safe_positions.remove((new_row, new_col))
+        grid[current_row][current_col].is_mine = False
+        grid[new_row][new_col].is_mine = True
 
     # Recalculate counts because the mine positions changed.
     for current_row in grid:
